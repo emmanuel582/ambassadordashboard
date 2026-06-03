@@ -224,13 +224,8 @@ export function CalculatorTab({ RANKS }) {
 }
 
 export function TeamTab({ RANKS }) {
-  const teamMembers = [
-    { id: 1, name: "Sarah Jenkins", email: "sarah.j@example.com", rank: 2, joined: "Oct 12, 2025", volume: 15000, status: "Active" },
-    { id: 2, name: "Marcus Thorne", email: "marcus.t@example.com", rank: 1, joined: "Nov 03, 2025", volume: 4500, status: "Active" },
-    { id: 3, name: "Elena Rodriguez", email: "elena.r@example.com", rank: 3, joined: "Sep 28, 2025", volume: 32000, status: "Active" },
-    { id: 4, name: "David Kim", email: "david.k@example.com", rank: 1, joined: "Nov 15, 2025", volume: 1500, status: "Pending" },
-    { id: 5, name: "Jessica Walsh", email: "jess.w@example.com", rank: 1, joined: "Nov 20, 2025", volume: 0, status: "Inactive" },
-  ];
+    // Replace hardcoded data with an empty array until real data is pulled from the backend
+    const teamMembers = [];
 
   return (
     <div className="fade-in">
@@ -252,44 +247,52 @@ export function TeamTab({ RANKS }) {
               </tr>
             </thead>
             <tbody>
-              {teamMembers.map(m => {
-                const r = RANKS[m.rank - 1] || RANKS[0];
-                return (
-                  <tr key={m.id} style={{ borderBottom: "1px solid #1e2333", transition: "background .2s" }} className="table-row-hover">
-                    <td style={{ padding: "16px 20px" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                        <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#161b26", border: `1px solid ${r.color}40`, display: "flex", alignItems: "center", justifyContent: "center", color: r.color, fontWeight: 700, fontSize: 14 }}>
-                          {m.name.charAt(0)}
+              {teamMembers.length === 0 ? (
+                <tr>
+                  <td colSpan={5} style={{ padding: "32px 20px", textAlign: "center", color: "#6b7280", fontSize: 13 }}>
+                    You don't have any team members yet.
+                  </td>
+                </tr>
+              ) : (
+                teamMembers.map(m => {
+                  const r = RANKS[m.rank - 1] || RANKS[0];
+                  return (
+                    <tr key={m.id} style={{ borderBottom: "1px solid #1e2333", transition: "background .2s" }} className="table-row-hover">
+                      <td style={{ padding: "16px 20px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                          <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#161b26", border: `1px solid ${r.color}40`, display: "flex", alignItems: "center", justifyContent: "center", color: r.color, fontWeight: 700, fontSize: 14 }}>
+                            {m.name.charAt(0)}
+                          </div>
+                          <div>
+                            <div style={{ fontSize: 14, fontWeight: 600, color: "#e8e4dc", marginBottom: 2 }}>{m.name}</div>
+                            <div style={{ fontSize: 12, color: "#6b7280" }}>{m.email}</div>
+                          </div>
                         </div>
-                        <div>
-                          <div style={{ fontSize: 14, fontWeight: 600, color: "#e8e4dc", marginBottom: 2 }}>{m.name}</div>
-                          <div style={{ fontSize: 12, color: "#6b7280" }}>{m.email}</div>
+                      </td>
+                      <td style={{ padding: "16px 20px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <div style={{ color: r.color }}>{r.badge}</div>
+                          <div style={{ fontSize: 13, color: "#a0a8b8" }}>{r.title}</div>
                         </div>
-                      </div>
-                    </td>
-                    <td style={{ padding: "16px 20px" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <div style={{ color: r.color }}>{r.badge}</div>
-                        <div style={{ fontSize: 13, color: "#a0a8b8" }}>{r.title}</div>
-                      </div>
-                    </td>
-                    <td style={{ padding: "16px 20px", fontSize: 13, fontWeight: 600, color: "#e8e4dc" }}>
-                      ${m.volume.toLocaleString()}
-                    </td>
-                    <td style={{ padding: "16px 20px" }}>
-                      <span className="pill" style={{ 
-                        background: m.status === 'Active' ? '#7EC8A420' : m.status === 'Pending' ? '#C8A96E20' : '#4b556320', 
-                        color: m.status === 'Active' ? '#7EC8A4' : m.status === 'Pending' ? '#C8A96E' : '#a0a8b8' 
-                      }}>
-                        {m.status}
-                      </span>
-                    </td>
-                    <td style={{ padding: "16px 20px", fontSize: 13, color: "#6b7280" }}>
-                      {m.joined}
-                    </td>
-                  </tr>
-                );
-              })}
+                      </td>
+                      <td style={{ padding: "16px 20px", fontSize: 13, fontWeight: 600, color: "#e8e4dc" }}>
+                        ${m.volume.toLocaleString()}
+                      </td>
+                      <td style={{ padding: "16px 20px" }}>
+                        <span className="pill" style={{ 
+                          background: m.status === 'Active' ? '#7EC8A420' : m.status === 'Pending' ? '#C8A96E20' : '#4b556320', 
+                          color: m.status === 'Active' ? '#7EC8A4' : m.status === 'Pending' ? '#C8A96E' : '#a0a8b8' 
+                        }}>
+                          {m.status}
+                        </span>
+                      </td>
+                      <td style={{ padding: "16px 20px", fontSize: 13, color: "#6b7280" }}>
+                        {m.joined}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
@@ -385,13 +388,8 @@ export function CommissionsTab() {
 }
 
 export function LeaderboardTab({ RANKS }) {
-  const leaders = [
-    { rank: 1, name: "Jessica Wong", level: 6, volume: 345000, color: "#B39DDB" },
-    { rank: 2, name: "Michael Chang", level: 5, volume: 180000, color: "#E8845C" },
-    { rank: 3, name: "Sarah Jenkins", level: 4, volume: 85000, color: "#C47DB8" },
-    { rank: 4, name: "Dr. Amanda Torres", level: 4, volume: 78000, color: "#C47DB8" },
-    { rank: 5, name: "James Wilson", level: 3, volume: 42000, color: "#7EC8A4" },
-  ];
+    // Replace hardcoded leaders with empty array until real data is pulled from backend
+    const leaders = [];
 
   return (
     <div className="fade-in">
@@ -412,31 +410,39 @@ export function LeaderboardTab({ RANKS }) {
               </tr>
             </thead>
             <tbody>
-              {leaders.map((l, idx) => {
-                const r = RANKS[l.level - 1] || RANKS[0];
-                return (
-                  <tr key={idx} style={{ borderBottom: "1px solid #1e2333", transition: "background .2s" }} className="table-row-hover">
-                    <td style={{ padding: "16px 20px" }}>
-                      <div style={{ width: 32, height: 32, borderRadius: "50%", background: idx < 3 ? l.color + "20" : "#1a1f2e", color: idx < 3 ? l.color : "#6b7280", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, border: idx < 3 ? `1px solid ${l.color}50` : "none" }}>
-                        #{l.rank}
-                      </div>
-                    </td>
-                    <td style={{ padding: "16px 20px", fontSize: 14, fontWeight: 600, color: "#e8e4dc" }}>
-                      {l.name}
-                      {idx === 0 && <Star size={12} color="#FFE082" fill="#FFE082" style={{ marginLeft: 8, verticalAlign: "text-top" }} />}
-                    </td>
-                    <td style={{ padding: "16px 20px" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                        <span style={{ color: r.color }}>{r.badge}</span>
-                        <span style={{ fontSize: 13, color: "#a0a8b8" }}>{r.title}</span>
-                      </div>
-                    </td>
-                    <td style={{ padding: "16px 20px", textAlign: "right", fontSize: 14, fontWeight: 700, color: r.color }}>
-                      ${l.volume.toLocaleString()}
-                    </td>
-                  </tr>
-                );
-              })}
+              {leaders.length === 0 ? (
+                <tr>
+                  <td colSpan={4} style={{ padding: "32px 20px", textAlign: "center", color: "#6b7280", fontSize: 13 }}>
+                    Leaderboard data is currently unavailable.
+                  </td>
+                </tr>
+              ) : (
+                leaders.map((l, idx) => {
+                  const r = RANKS[l.level - 1] || RANKS[0];
+                  return (
+                    <tr key={idx} style={{ borderBottom: "1px solid #1e2333", transition: "background .2s" }} className="table-row-hover">
+                      <td style={{ padding: "16px 20px" }}>
+                        <div style={{ width: 32, height: 32, borderRadius: "50%", background: idx < 3 ? l.color + "20" : "#1a1f2e", color: idx < 3 ? l.color : "#6b7280", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, border: idx < 3 ? `1px solid ${l.color}50` : "none" }}>
+                          #{l.rank}
+                        </div>
+                      </td>
+                      <td style={{ padding: "16px 20px", fontSize: 14, fontWeight: 600, color: "#e8e4dc" }}>
+                        {l.name}
+                        {idx === 0 && <Star size={12} color="#FFE082" fill="#FFE082" style={{ marginLeft: 8, verticalAlign: "text-top" }} />}
+                      </td>
+                      <td style={{ padding: "16px 20px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                          <span style={{ color: r.color }}>{r.badge}</span>
+                          <span style={{ fontSize: 13, color: "#a0a8b8" }}>{r.title}</span>
+                        </div>
+                      </td>
+                      <td style={{ padding: "16px 20px", textAlign: "right", fontSize: 14, fontWeight: 700, color: r.color }}>
+                        ${l.volume.toLocaleString()}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
