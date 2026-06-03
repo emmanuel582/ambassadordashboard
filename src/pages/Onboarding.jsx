@@ -16,7 +16,7 @@ export default function Onboarding() {
         <p style={{ color: "#6b7280", fontSize: 14 }}>Complete your training modules to unlock Level 2: Senior Ambassador.</p>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 350px", gap: 32 }} className="volume-container">
+      <div className="responsive-sidebar">
         {/* Main Video Area */}
         <div>
           <div style={{ background: "#000", border: "1px solid #1e2333", borderRadius: 12, aspectRatio: "16/9", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 24, position: "relative", overflow: "hidden" }}>

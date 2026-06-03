@@ -2,16 +2,19 @@ import { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import { ProgressRing, AnimatedNumber } from '../components/ui/Shared';
-import { Copy, Check, Activity, Link as LinkIcon } from 'lucide-react';
+import { Copy, Check, Activity, Link as LinkIcon, Loader2 } from 'lucide-react';
 import { RanksTab, BundlesTab, CalculatorTab, TeamTab, CommissionsTab, LeaderboardTab } from '../components/DashboardTabs';
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const { user } = useAuth();
-  const { RANKS, sales, setSales, recruits, setRecruits, selectedRank, setSelectedRank, volume, setVolume, rank, salesPct, recruitPct, overallPct, estimatedCommission, activities } = useAppContext();
+  const { 
+    RANKS, sales, setSales, recruits, setRecruits, selectedRank, setSelectedRank, 
+    volume, setVolume, rank, salesPct, recruitPct, overallPct, estimatedCommission, 
+    activities, referralLink, loadingSync 
+  } = useAppContext();
   
   const [copied, setCopied] = useState(false);
-  const referralLink = "https://remotefitlabs.com/join?ref=ambassador123";
 
   const handleCopy = () => {
     navigator.clipboard.writeText(referralLink);
@@ -37,8 +40,9 @@ export default function Dashboard() {
             <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 28, fontWeight: 700, color: "#e8e4dc", lineHeight: 1.2 }}>
               Welcome back, <span style={{ color: rank.color }}>{firstName}</span>
             </h1>
-            <div style={{ fontSize: 13, color: "#6b7280", marginTop: 4 }}>
+            <div style={{ fontSize: 13, color: "#6b7280", marginTop: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
               {rank.badge} {rank.title} · Level {rank.level}
+              {loadingSync && <span style={{ color: '#A8C4D4', display: 'flex', alignItems: 'center', gap: 4 }}><Loader2 size={12} className="spin" /> Syncing GHL Data...</span>}
             </div>
           </div>
         </div>
@@ -54,7 +58,7 @@ export default function Dashboard() {
 
       {activeTab === "dashboard" && (
         <div className="fade-in">
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 32 }} className="volume-container">
+          <div className="responsive-grid-2" style={{ marginBottom: 32 }}>
             <div className="metric-box" style={{ background: "linear-gradient(135deg, #111520, #161b26)" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
                 <LinkIcon size={16} color="#C8A96E" />
@@ -83,8 +87,8 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 16, marginBottom: 24 }} className="volume-container">
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }} className="metric-box-container">
+          <div className="responsive-sidebar" style={{ marginBottom: 24 }}>
+            <div className="responsive-grid-3 metric-box-container">
               <div className="metric-box">
                 <div style={{ fontSize: 11, color: "#4b5563", letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 12 }}>Sales Progress</div>
                 <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
@@ -158,7 +162,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 24 }} className="volume-container">
+          <div className="responsive-grid-2" style={{ marginBottom: 24 }}>
             <div className="metric-box">
               <div style={{ fontSize: 11, color: "#4b5563", letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 16 }}>Monthly Volume Estimator</div>
               <div style={{ fontSize: 11, color: "#6b7280", marginBottom: 8 }}>Personal + Team Volume: <span style={{ color: "#e8e4dc" }}>${volume.toLocaleString()}</span></div>

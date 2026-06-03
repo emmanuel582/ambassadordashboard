@@ -57,6 +57,9 @@ input[type=range]::-webkit-slider-thumb:hover { box-shadow: 0 0 16px var(--rank-
 
 @keyframes pulse-ring { 0%,100%{opacity:.3;transform:scale(1)} 50%{opacity:.6;transform:scale(1.05)} }
 
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.spin { animation: spin 1s linear infinite; }
+
 .table-row-hover:hover { background: #161b26; }
 .hover-opacity:hover { opacity: 0.8; }
 
@@ -66,16 +69,25 @@ input[type=text]:focus, input[type=email]:focus, input[type=tel]:focus {
   box-shadow: 0 0 0 2px #C8A96E30;
 }
 
+/* Layout Utility Classes */
+.responsive-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.responsive-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.responsive-sidebar { display: grid; grid-template-columns: 1fr 350px; gap: 32px; }
+.table-container { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.responsive-flex-row { display: flex; align-items: center; gap: 16px; }
+
 /* Responsive adjustments */
+@media (max-width: 900px) {
+  .responsive-sidebar { grid-template-columns: 1fr !important; }
+}
+
 @media (max-width: 768px) {
-  .metric-box-container {
+  .responsive-grid-2, .responsive-grid-3 {
     grid-template-columns: 1fr !important;
   }
-  .volume-container {
-    grid-template-columns: 1fr !important;
-  }
-  .calculator-container {
-    grid-template-columns: 1fr !important;
+  .responsive-flex-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
   }
   .header-content {
     flex-direction: column;
@@ -92,18 +104,6 @@ input[type=text]:focus, input[type=email]:focus, input[type=tel]:focus {
   .hide-mobile {
     display: none !important;
   }
-  .rank-structure-item {
-    flex-direction: column;
-  }
-  .rank-structure-grid {
-    grid-template-columns: 1fr 1fr !important;
-  }
-  .bundles-grid {
-    grid-template-columns: 1fr !important;
-  }
-  .bloodwork-panels {
-    flex-direction: column;
-  }
   .difference-card {
     flex-direction: column;
   }
@@ -111,5 +111,17 @@ input[type=text]:focus, input[type=email]:focus, input[type=tel]:focus {
     justify-content: space-between;
     width: 100%;
   }
+  
+  /* Fallback overrides for legacy hardcoded inline styles until fully migrated */
+  .metric-box-container { grid-template-columns: 1fr !important; }
+  .volume-container { grid-template-columns: 1fr !important; }
+  .calculator-container { grid-template-columns: 1fr !important; }
+  .rank-structure-item { flex-direction: column; }
+  .rank-structure-grid { grid-template-columns: 1fr 1fr !important; }
+  .bundles-grid { grid-template-columns: 1fr !important; }
+  .bloodwork-panels { flex-direction: column; }
 }
 
+@media (max-width: 480px) {
+  .rank-structure-grid { grid-template-columns: 1fr !important; }
+}

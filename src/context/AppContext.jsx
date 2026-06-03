@@ -1,4 +1,6 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
+import { useAuth } from './AuthContext';
 
 const AppContext = createContext();
 
@@ -62,16 +64,65 @@ const RANKS = [
 ];
 
 export function AppProvider({ children }) {
-  const [sales, setSales] = useState(2);
-  const [recruits, setRecruits] = useState(1);
+  const { user } = useAuth();
+  
+  const [loadingSync, setLoadingSync] = useState(true);
+  const [sales, setSales] = useState(0);
+  const [recruits, setRecruits] = useState(0);
   const [selectedRank, setSelectedRank] = useState(0);
-  const [volume, setVolume] = useState(3000);
+  const [volume, setVolume] = useState(0);
+  const [referralLink, setReferralLink] = useState("https://remotefitlabs.com/join");
 
   const [activities, setActivities] = useState([
     { id: 1, type: "sale", text: "New Sale: Elite Transformation", time: "2 hours ago", color: "#A8C4D4" },
     { id: 2, type: "recruit", text: "Sarah joined your team", time: "5 hours ago", color: "#C8A96E" },
     { id: 3, type: "rank", text: "Rank progressed to 40%", time: "1 day ago", color: "#7EC8A4" },
   ]);
+
+  useEffect(() => {
+    async function syncGHL() {
+      if (!user) {
+        setLoadingSync(false);
+        return;
+      }
+      
+      try {
+        setLoadingSync(true);
+        const { data, error } = await supabase.functions.invoke('ghl-sync');
+        
+        if (error) {
+          console.error("Error syncing with GHL:", error);
+          // Fallback to demo data so UI doesn't crash completely on backend failure
+          setSales(2);
+          setRecruits(1);
+          setVolume(3000);
+          setSelectedRank(0);
+          setReferralLink("https://remotefitlabs.com/join?ref=error");
+        } else if (data) {
+          if (data.mocked) {
+             setSales(data.sales ?? 2);
+             setRecruits(data.recruits ?? 1);
+             setVolume(data.volume ?? 3000);
+             setSelectedRank(data.selectedRank ?? 0);
+             setReferralLink(data.referralLink ?? "https://remotefitlabs.com/join?ref=demo");
+          } else {
+             // Data parsed directly from GHL Custom Fields (defaulting to 0 if we haven't mapped them yet)
+             setSales(data.sales ?? 0);
+             setRecruits(data.recruits ?? 0);
+             setVolume(data.volume ?? 0);
+             setSelectedRank(data.selectedRank ?? 0); 
+             setReferralLink(data.referralLink ?? `https://remotefitlabs.com/join?ref=${data.contactId || 'new'}`);
+          }
+        }
+      } catch (err) {
+        console.error("Exception invoking ghl-sync:", err);
+      } finally {
+        setLoadingSync(false);
+      }
+    }
+    
+    syncGHL();
+  }, [user]);
 
   const rank = RANKS[selectedRank];
   const salesPct = Math.min((sales / rank.customers) * 100, 100);
@@ -86,8 +137,10 @@ export function AppProvider({ children }) {
       recruits, setRecruits,
       selectedRank, setSelectedRank,
       volume, setVolume,
+      referralLink, setReferralLink,
       rank, salesPct, recruitPct, overallPct, estimatedCommission,
-      activities
+      activities,
+      loadingSync
     }}>
       {children}
     </AppContext.Provider>

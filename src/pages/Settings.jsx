@@ -20,7 +20,7 @@ export default function Settings() {
         <p style={{ color: "#6b7280", fontSize: 14 }}>Manage your profile, payout preferences, and platform notifications.</p>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "250px 1fr", gap: 32 }} className="volume-container">
+      <div className="responsive-sidebar">
         {/* Sidebar Nav */}
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {[
@@ -52,11 +52,11 @@ export default function Settings() {
               <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 24, paddingBottom: 16, borderBottom: "1px solid #1e2333" }}>Profile Information</h2>
               
               <form onSubmit={handleSave}>
-                <div style={{ display: "flex", alignItems: "center", gap: 24, marginBottom: 32 }}>
+                <div className="responsive-flex-row" style={{ marginBottom: 32 }}>
                   {user?.user_metadata?.avatar_url ? (
                     <img src={user.user_metadata.avatar_url} alt="Avatar" style={{ width: 80, height: 80, borderRadius: "50%", border: "2px solid #C8A96E40", objectFit: "cover" }} />
                   ) : (
-                    <div style={{ width: 80, height: 80, borderRadius: "50%", background: "linear-gradient(135deg, #C8A96E20, #E8845C20)", border: "1px solid #C8A96E30", display: "flex", alignItems: "center", justifyContent: "center", color: "#C8A96E", fontSize: 28, fontWeight: 700 }}>
+                    <div style={{ width: 80, height: 80, borderRadius: "50%", background: "linear-gradient(135deg, #C8A96E20, #E8845C20)", border: "1px solid #C8A96E30", display: "flex", alignItems: "center", justifyContent: "center", color: "#C8A96E", fontSize: 28, fontWeight: 700, flexShrink: 0 }}>
                       {(user?.user_metadata?.full_name || user?.email || 'A').charAt(0).toUpperCase()}
                     </div>
                   )}
@@ -66,7 +66,7 @@ export default function Settings() {
                   </div>
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginBottom: 24 }}>
+                <div className="responsive-grid-2" style={{ marginBottom: 24 }}>
                   <div>
                     <label style={{ display: "block", fontSize: 12, color: "#a0a8b8", marginBottom: 8, fontWeight: 500 }}>Full Name</label>
                     <input type="text" defaultValue={user?.user_metadata?.full_name || "Alex Johnson"} style={{ width: "100%", background: "#0d1117", border: "1px solid #1e2333", padding: "12px 16px", borderRadius: 8, color: "#e8e4dc", outline: "none", fontSize: 14 }} />

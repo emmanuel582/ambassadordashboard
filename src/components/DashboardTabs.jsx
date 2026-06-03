@@ -17,7 +17,7 @@ export function RanksTab({ RANKS }) {
               <div style={{ fontSize: 10, color: "#4b5563", letterSpacing: ".1em", textTransform: "uppercase" }}>Level {r.level}</div>
               <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 18, color: r.color, fontWeight: 600 }}>{r.title}</div>
             </div>
-            <div className="rank-structure-grid" style={{ flex: 1, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+            <div className="responsive-grid-3" style={{ flex: 1 }}>
               <div>
                 <div style={{ fontSize: 10, color: "#4b5563", letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 6 }}>Qualification</div>
                 <div style={{ fontSize: 12, color: "#a0a8b8" }}>{r.customers} customers</div>
@@ -81,7 +81,7 @@ export function BundlesTab() {
         <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 28, fontWeight: 700, marginBottom: 6 }}>Program Bundles</div>
         <div style={{ fontSize: 13, color: "#6b7280" }}>Sell outcomes, not peptides. Every bundle anchors on bloodwork — creating a data-driven, defensible customer relationship.</div>
       </div>
-      <div className="bundles-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 32 }}>
+      <div className="responsive-grid-2" style={{ marginBottom: 32 }}>
         {BUNDLES.map((b, i) => (
           <div key={i} className="bundle-card" style={{ "--bc": b.color, "--bcg": b.color + "20" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
@@ -138,7 +138,7 @@ export function CalculatorTab({ RANKS }) {
         <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 28, fontWeight: 700, marginBottom: 6 }}>Income Calculator</div>
         <div style={{ fontSize: 13, color: "#6b7280" }}>Model your earnings at each rank with adjustable personal and team volume.</div>
       </div>
-      <div className="calculator-container" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
+      <div className="responsive-grid-2" style={{ marginBottom: 24 }}>
         <div>
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             {RANKS.map((r, i) => {
@@ -160,7 +160,7 @@ export function CalculatorTab({ RANKS }) {
                       <span style={{ fontSize: 10, color: "#4b5563" }}>/mo</span>
                     </div>
                   </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
+                  <div className="responsive-grid-3">
                     <div style={{ fontSize: 11 }}>
                       <div style={{ color: "#4b5563", marginBottom: 2 }}>Personal</div>
                       <div style={{ color: "#a0a8b8" }}>${personal.toLocaleString()}</div>
@@ -239,7 +239,7 @@ export function TeamTab({ RANKS }) {
       </div>
       
       <div className="metric-box" style={{ padding: 0, overflow: "hidden", marginBottom: 24 }}>
-        <div style={{ overflowX: "auto" }}>
+        <div className="table-container">
           <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", minWidth: 600 }}>
             <thead>
               <tr style={{ background: "#161b26", borderBottom: "1px solid #1e2333" }}>
@@ -347,7 +347,7 @@ export function CommissionsTab() {
         <div style={{ padding: "20px", borderBottom: "1px solid #1e2333" }}>
           <div style={{ fontSize: 14, fontWeight: 600 }}>Recent Transactions</div>
         </div>
-        <div style={{ overflowX: "auto" }}>
+        <div className="table-container">
           <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", minWidth: 500 }}>
             <tbody>
               {transactions.map(t => (
@@ -397,7 +397,7 @@ export function LeaderboardTab({ RANKS }) {
       </div>
 
       <div className="metric-box" style={{ padding: 0, overflow: "hidden" }}>
-        <div style={{ overflowX: "auto" }}>
+        <div className="table-container">
           <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", minWidth: 500 }}>
             <thead>
               <tr style={{ background: "#161b26", borderBottom: "1px solid #1e2333" }}>
