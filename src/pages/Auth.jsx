@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Navigate } from 'react-router-dom';
 import { LogIn, UserPlus, Mail, Lock, User, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function Auth() {
   const { user, signIn, signUp, signInWithGoogle } = useAuth();
@@ -36,26 +37,53 @@ export default function Auth() {
           setSubmitting(false);
           return;
         }
-        const { error: signUpError } = await signUp(email, password, fullName.trim());
+        const { data: signUpData, error: signUpError } = await signUp(email, password, fullName.trim());
         if (signUpError) {
-          setError(signUpError.message);
+          if (signUpError.message?.toLowerCase().includes('already registered')) {
+            setError('This email is already registered. Try signing in instead.');
+            toast.error('Email already registered. Try signing in.');
+          } else {
+            setError(signUpError.message);
+            toast.error(signUpError.message);
+          }
         } else {
-          setSuccess('Account created! Check your email to confirm, then sign in.');
-          setIsSignUp(false);
-          setPassword('');
+          // Check if user was auto-confirmed (no email confirmation required)
+          if (signUpData?.user && !signUpData.user.email_confirmed_at && signUpData.user.confirmation_sent_at) {
+            setSuccess('Account created! Check your email to confirm, then sign in.');
+            toast.success('Account created! Check your email to confirm.');
+            setIsSignUp(false);
+            setPassword('');
+          } else {
+            // Auto-confirmed — try to sign them in immediately
+            toast.success('Account created successfully!');
+            const { error: autoSignInError } = await signIn(email, password);
+            if (autoSignInError) {
+              setSuccess('Account created! You can now sign in.');
+              setIsSignUp(false);
+              setPassword('');
+            }
+          }
         }
       } else {
         const { error: signInError } = await signIn(email, password);
         if (signInError) {
-          if (signInError.message.includes('Invalid login')) {
+          if (signInError.message?.toLowerCase().includes('email not confirmed')) {
+            setError('Your email is not confirmed yet. Please check your inbox for a confirmation link, or contact your admin.');
+            toast.error('Email not confirmed. Check your inbox.');
+          } else if (signInError.message?.includes('Invalid login')) {
             setError('Invalid email or password. Please try again.');
+            toast.error('Invalid email or password.');
           } else {
             setError(signInError.message);
+            toast.error(signInError.message);
           }
+        } else {
+          toast.success('Welcome back! Syncing your data...');
         }
       }
     } catch (err) {
       setError('Something went wrong. Please try again.');
+      toast.error('Something went wrong. Please try again.');
     }
     setSubmitting(false);
   };

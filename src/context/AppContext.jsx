@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './AuthContext';
+import toast from 'react-hot-toast';
 
 const AppContext = createContext();
 
@@ -65,7 +66,7 @@ const RANKS = [
 
 export function AppProvider({ children }) {
   const { user } = useAuth();
-  
+
   const [loadingSync, setLoadingSync] = useState(true);
   const [sales, setSales] = useState(0);
   const [recruits, setRecruits] = useState(0);
@@ -73,11 +74,12 @@ export function AppProvider({ children }) {
   const [volume, setVolume] = useState(0);
   const [referralLink, setReferralLink] = useState("https://remotefitlabs.com/join");
 
-  const [activities, setActivities] = useState([
-    { id: 1, type: "sale", text: "New Sale: Elite Transformation", time: "2 hours ago", color: "#A8C4D4" },
-    { id: 2, type: "recruit", text: "Sarah joined your team", time: "5 hours ago", color: "#C8A96E" },
-    { id: 3, type: "rank", text: "Rank progressed to 40%", time: "1 day ago", color: "#7EC8A4" },
-  ]);
+  // Payment data from GHL's connected Stripe
+  const [commissions, setCommissions] = useState({ available: 0, pending: 0 });
+  const [transactions, setTransactions] = useState([]);
+  const [subscriptions, setSubscriptions] = useState([]);
+
+  const [activities, setActivities] = useState([]);
 
   useEffect(() => {
     async function syncGHL() {
@@ -85,33 +87,64 @@ export function AppProvider({ children }) {
         setLoadingSync(false);
         return;
       }
-      
+
       try {
         setLoadingSync(true);
         const { data, error } = await supabase.functions.invoke('ghl-sync');
-        
+
         if (error) {
           console.error("Error syncing with GHL:", error);
-          // Fallback to demo data so UI doesn't crash completely on backend failure
-          setSales(2);
-          setRecruits(1);
-          setVolume(3000);
+          toast.error("Failed to sync with GoHighLevel API.");
+          setSales(0);
+          setRecruits(0);
+          setVolume(0);
           setSelectedRank(0);
-          setReferralLink("https://remotefitlabs.com/join?ref=error");
+          setReferralLink("https://remotefitlabs.com/join");
         } else if (data) {
+          // Toast Notifications
           if (data.mocked) {
-             setSales(data.sales ?? 2);
-             setRecruits(data.recruits ?? 1);
-             setVolume(data.volume ?? 3000);
-             setSelectedRank(data.selectedRank ?? 0);
-             setReferralLink(data.referralLink ?? "https://remotefitlabs.com/join?ref=demo");
+            toast.error("Backend API Keys not set. Showing mock data.");
+          } else if (data.contactFound === false) {
+            toast.error("Your email was not found in GoHighLevel. Are you registered?", { duration: 5000 });
           } else {
-             // Data parsed directly from GHL Custom Fields (defaulting to 0 if we haven't mapped them yet)
-             setSales(data.sales ?? 0);
-             setRecruits(data.recruits ?? 0);
-             setVolume(data.volume ?? 0);
-             setSelectedRank(data.selectedRank ?? 0); 
-             setReferralLink(data.referralLink ?? `https://remotefitlabs.com/join?ref=${data.contactId || 'new'}`);
+            toast.success("Successfully synced live data from GoHighLevel!");
+          }
+
+          // Ambassador metrics
+          setSales(data.sales ?? 0);
+          setRecruits(data.recruits ?? 0);
+          setVolume(data.volume ?? 0);
+          setSelectedRank(data.selectedRank ?? 0);
+          setReferralLink(data.referralLink ?? `https://remotefitlabs.com/join?ref=${data.contactId || 'new'}`);
+
+          // Payment data from GHL Stripe
+          if (data.commissions) {
+            setCommissions(data.commissions);
+          }
+          if (data.transactions) {
+            setTransactions(data.transactions);
+          }
+          if (data.subscriptions) {
+            setSubscriptions(data.subscriptions);
+          }
+
+          // Build real activity feed from transactions
+          const realActivities = (data.transactions || []).slice(0, 5).map((t, i) => ({
+            id: t.id || i,
+            type: t.type === 'charge' ? 'sale' : 'commission',
+            text: `${t.description} — $${t.amount?.toFixed(2)}`,
+            time: t.createdAt ? new Date(t.createdAt).toLocaleDateString() : 'Recently',
+            color: t.status === 'succeeded' ? '#7EC8A4' : t.status === 'pending' ? '#C8A96E' : '#A8C4D4',
+          }));
+
+          if (realActivities.length > 0) {
+            setActivities(realActivities);
+          } else {
+            // No transactions yet — show a welcome message
+            setActivities([
+              { id: 1, type: "info", text: "Welcome to your Ambassador Dashboard!", time: "Just now", color: "#C8A96E" },
+              { id: 2, type: "info", text: "Your stats will update as sales come in", time: "Just now", color: "#7EC8A4" },
+            ]);
           }
         }
       } catch (err) {
@@ -120,7 +153,7 @@ export function AppProvider({ children }) {
         setLoadingSync(false);
       }
     }
-    
+
     syncGHL();
   }, [user]);
 
@@ -140,6 +173,7 @@ export function AppProvider({ children }) {
       referralLink, setReferralLink,
       rank, salesPct, recruitPct, overallPct, estimatedCommission,
       activities,
+      commissions, transactions, subscriptions,
       loadingSync
     }}>
       {children}

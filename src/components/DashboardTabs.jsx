@@ -1,4 +1,5 @@
 import { Users, TrendingUp, DollarSign, Award, ArrowUpRight, Clock, Star, ChevronRight } from 'lucide-react';
+import { useAppContext } from '../context/AppContext';
 
 export function RanksTab({ RANKS }) {
   return (
@@ -298,12 +299,7 @@ export function TeamTab({ RANKS }) {
 }
 
 export function CommissionsTab() {
-  const transactions = [
-    { id: 1, desc: "Level 1 Override - Sarah Jenkins", amount: 450, date: "Today, 10:24 AM", status: "Pending" },
-    { id: 2, desc: "Direct Sale - Elite Transformation", amount: 300, date: "Nov 22, 2025", status: "Available" },
-    { id: 3, desc: "Monthly Recurring - 5 Customers", amount: 74, date: "Nov 20, 2025", status: "Available" },
-    { id: 4, desc: "Payout to Bank ending in 4092", amount: -1250, date: "Nov 15, 2025", status: "Completed" },
-  ];
+  const { commissions, transactions } = useAppContext();
 
   return (
     <div className="fade-in">
@@ -318,7 +314,7 @@ export function CommissionsTab() {
             <DollarSign size={16} />
             <div style={{ fontSize: 11, letterSpacing: ".08em", textTransform: "uppercase" }}>Available Balance</div>
           </div>
-          <div style={{ fontSize: 36, fontFamily: "'Playfair Display', serif", fontWeight: 700, color: "#7EC8A4", lineHeight: 1 }}>$1,424.00</div>
+          <div style={{ fontSize: 36, fontFamily: "'Playfair Display', serif", fontWeight: 700, color: "#7EC8A4", lineHeight: 1 }}>${(commissions?.available || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
           <button style={{ marginTop: 16, width: "100%", background: "#7EC8A4", color: "#0a0d14", border: "none", padding: "10px", borderRadius: 8, fontWeight: 600, cursor: "pointer", transition: "opacity .2s" }} className="hover-opacity">
             Request Payout
           </button>
@@ -329,7 +325,7 @@ export function CommissionsTab() {
             <Clock size={16} />
             <div style={{ fontSize: 11, letterSpacing: ".08em", textTransform: "uppercase" }}>Pending Approval</div>
           </div>
-          <div style={{ fontSize: 36, fontFamily: "'Playfair Display', serif", fontWeight: 700, color: "#C8A96E", lineHeight: 1 }}>$450.00</div>
+          <div style={{ fontSize: 36, fontFamily: "'Playfair Display', serif", fontWeight: 700, color: "#C8A96E", lineHeight: 1 }}>${(commissions?.pending || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
           <div style={{ fontSize: 12, color: "#6b7280", marginTop: 16 }}>Clears in ~3 days</div>
         </div>
 
@@ -350,28 +346,36 @@ export function CommissionsTab() {
         <div className="table-container">
           <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", minWidth: 500 }}>
             <tbody>
-              {transactions.map(t => (
-                <tr key={t.id} style={{ borderBottom: "1px solid #1e2333" }} className="table-row-hover">
-                  <td style={{ padding: "16px 20px" }}>
-                    <div style={{ fontSize: 13, fontWeight: 500, color: "#e8e4dc", marginBottom: 2 }}>{t.desc}</div>
-                    <div style={{ fontSize: 11, color: "#6b7280" }}>{t.date}</div>
-                  </td>
-                  <td style={{ padding: "16px 20px", textAlign: "right" }}>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: t.amount > 0 ? "#7EC8A4" : "#e8e4dc" }}>
-                      {t.amount > 0 ? "+" : ""}{t.amount < 0 ? `-$${Math.abs(t.amount)}` : `$${t.amount}`}
-                    </div>
-                    <div style={{ marginTop: 4 }}>
-                      <span className="pill" style={{ 
-                        background: t.status === 'Available' || t.status === 'Completed' ? '#7EC8A420' : '#C8A96E20', 
-                        color: t.status === 'Available' || t.status === 'Completed' ? '#7EC8A4' : '#C8A96E',
-                        fontSize: 10
-                      }}>
-                        {t.status}
-                      </span>
-                    </div>
+              {(!transactions || transactions.length === 0) ? (
+                <tr>
+                  <td colSpan={2} style={{ padding: "32px 20px", textAlign: "center", color: "#6b7280", fontSize: 13 }}>
+                    No recent transactions found.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                transactions.map((t, idx) => (
+                  <tr key={t.id || idx} style={{ borderBottom: "1px solid #1e2333" }} className="table-row-hover">
+                    <td style={{ padding: "16px 20px" }}>
+                      <div style={{ fontSize: 13, fontWeight: 500, color: "#e8e4dc", marginBottom: 2 }}>{t.description || t.desc}</div>
+                      <div style={{ fontSize: 11, color: "#6b7280" }}>{t.createdAt ? new Date(t.createdAt).toLocaleDateString() : t.date}</div>
+                    </td>
+                    <td style={{ padding: "16px 20px", textAlign: "right" }}>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: t.amount > 0 ? "#7EC8A4" : "#e8e4dc" }}>
+                        {t.amount > 0 ? "+" : ""}{t.amount < 0 ? `-$${Math.abs(t.amount).toFixed(2)}` : `$${(t.amount || 0).toFixed(2)}`}
+                      </div>
+                      <div style={{ marginTop: 4 }}>
+                        <span className="pill" style={{ 
+                          background: (t.status === 'succeeded' || t.status === 'Available' || t.status === 'Completed') ? '#7EC8A420' : '#C8A96E20', 
+                          color: (t.status === 'succeeded' || t.status === 'Available' || t.status === 'Completed') ? '#7EC8A4' : '#C8A96E',
+                          fontSize: 10
+                        }}>
+                          {t.status}
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
