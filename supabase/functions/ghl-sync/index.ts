@@ -184,7 +184,77 @@ serve(async (req) => {
       console.warn('Could not fetch GHL subscriptions:', subErr);
     }
 
-    // ─── 7. Build the response ───
+    // ─── 7. Fetch ALL ambassadors for Team & Leaderboard ───
+    let allAmbassadors: any[] = [];
+    try {
+      // Search for contacts with the "ambassador - active" tag
+      const teamRes = await fetch(
+        `https://services.leadconnectorhq.com/contacts/?locationId=${ghlLocationId}&query=ambassador&limit=100`,
+        { method: 'GET', headers: ghlHeaders }
+      );
+      if (teamRes.ok) {
+        const teamData = await teamRes.json();
+        const allContacts = teamData.contacts || [];
+        
+        // Filter to only contacts that have ambassador-related tags
+        const ambassadorContacts = allContacts.filter((c: any) => {
+          const tags = (c.tags || []).map((t: string) => t.toLowerCase());
+          return tags.includes('ambassador - active') || 
+                 tags.includes('ambassador approved') ||
+                 tags.includes('ambassador-active') ||
+                 tags.includes('ambassador-approved');
+        });
+
+        for (const amb of ambassadorContacts) {
+          const ambCF = amb.customFields || [];
+          const ambSales = parseInt(getCustomFieldValue(ambCF, 'Ambassador Total Sales') || '0', 10);
+          const ambRecruits = parseInt(getCustomFieldValue(ambCF, 'Ambassador Total Recruits') || '0', 10);
+          const ambVolume = parseFloat(getCustomFieldValue(ambCF, 'Ambassador Total Volume') || '0');
+          const ambRankLevel = parseInt(getCustomFieldValue(ambCF, 'Ambassador Rank Level') || '1', 10);
+          
+          // Find their affiliate link
+          let ambRefLink = getCustomFieldValue(ambCF, 'Ambassador Referral Link') || '';
+          if (!ambRefLink) {
+            for (const cf of ambCF) {
+              const val = String(cf.value ?? cf.field_value ?? '');
+              if (val.includes('?am_id=')) {
+                ambRefLink = val;
+                break;
+              }
+            }
+          }
+
+          // Determine status from tags
+          const ambTags = (amb.tags || []).map((t: string) => t.toLowerCase());
+          let status = 'Active';
+          if (ambTags.includes('ambassador - pending') || ambTags.includes('ambassador-pending')) {
+            status = 'Pending';
+          } else if (ambTags.includes('ambassador - inactive') || ambTags.includes('ambassador-inactive')) {
+            status = 'Inactive';
+          }
+
+          allAmbassadors.push({
+            id: amb.id,
+            name: `${amb.firstName || ''} ${amb.lastName || ''}`.trim() || 'Unknown',
+            email: amb.email || '',
+            rank: ambRankLevel,
+            volume: ambVolume,
+            sales: ambSales,
+            recruits: ambRecruits,
+            status,
+            joined: amb.dateAdded ? new Date(amb.dateAdded).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'Unknown',
+            referralLink: ambRefLink,
+          });
+        }
+
+        // Sort by volume descending for leaderboard
+        allAmbassadors.sort((a: any, b: any) => (b.volume || 0) - (a.volume || 0));
+      }
+    } catch (teamErr) {
+      console.warn('Could not fetch ambassador team data:', teamErr);
+    }
+
+    // ─── 8. Build the response ───
     return new Response(JSON.stringify({
       contactId: contact.id,
       firstName: contact.firstName,
@@ -206,6 +276,10 @@ serve(async (req) => {
       },
       transactions,
       subscriptions,
+
+      // Team & Leaderboard data (ALL ambassadors from GHL)
+      teamMembers: allAmbassadors,
+      leaderboard: allAmbassadors.slice(0, 20), // top 20 for leaderboard
 
       // Raw custom fields for debugging / future mapping
       customFields,

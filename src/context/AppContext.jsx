@@ -81,6 +81,10 @@ export function AppProvider({ children }) {
 
   const [activities, setActivities] = useState([]);
 
+  // Team & Leaderboard (real data from GHL)
+  const [teamMembers, setTeamMembers] = useState([]);
+  const [leaderboard, setLeaderboard] = useState([]);
+
   useEffect(() => {
     async function syncGHL() {
       if (!user) {
@@ -115,13 +119,11 @@ export function AppProvider({ children }) {
           setRecruits(data.recruits ?? 0);
           setVolume(data.volume ?? 0);
           setSelectedRank(data.selectedRank ?? 0);
-          // Use the real referral link from GHL custom field, or build one from the real contact ID
+          // Use the real referral link from GHL custom field
           if (data.referralLink && data.referralLink.trim() !== '') {
             setReferralLink(data.referralLink);
-          } else if (data.contactId) {
-            setReferralLink(`https://remotefitlabs.com/join?ref=${data.contactId}`);
           } else {
-            setReferralLink(''); // No link available — contact not found
+            setReferralLink(''); // No link available — contact not found or link not synced yet
           }
 
           // Payment data from GHL Stripe
@@ -153,6 +155,14 @@ export function AppProvider({ children }) {
               { id: 2, type: "info", text: "Your stats will update as sales come in", time: "Just now", color: "#7EC8A4" },
             ]);
           }
+
+          // Team & Leaderboard (real ambassador data from GHL)
+          if (data.teamMembers) {
+            setTeamMembers(data.teamMembers);
+          }
+          if (data.leaderboard) {
+            setLeaderboard(data.leaderboard);
+          }
         }
       } catch (err) {
         console.error("Exception invoking ghl-sync:", err);
@@ -181,6 +191,7 @@ export function AppProvider({ children }) {
       rank, salesPct, recruitPct, overallPct, estimatedCommission,
       activities,
       commissions, transactions, subscriptions,
+      teamMembers, leaderboard,
       loadingSync
     }}>
       {children}

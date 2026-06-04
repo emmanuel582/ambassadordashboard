@@ -224,8 +224,7 @@ export function CalculatorTab({ RANKS }) {
 }
 
 export function TeamTab({ RANKS }) {
-    // Replace hardcoded data with an empty array until real data is pulled from the backend
-    const teamMembers = [];
+  const { teamMembers } = useAppContext();
 
   return (
     <div className="fade-in">
@@ -388,8 +387,7 @@ export function CommissionsTab() {
 }
 
 export function LeaderboardTab({ RANKS }) {
-    // Replace hardcoded leaders with empty array until real data is pulled from backend
-    const leaders = [];
+  const { leaderboard } = useAppContext();
 
   return (
     <div className="fade-in">
@@ -410,20 +408,20 @@ export function LeaderboardTab({ RANKS }) {
               </tr>
             </thead>
             <tbody>
-              {leaders.length === 0 ? (
+              {(!leaderboard || leaderboard.length === 0) ? (
                 <tr>
                   <td colSpan={4} style={{ padding: "32px 20px", textAlign: "center", color: "#6b7280", fontSize: 13 }}>
                     Leaderboard data is currently unavailable.
                   </td>
                 </tr>
               ) : (
-                leaders.map((l, idx) => {
-                  const r = RANKS[l.level - 1] || RANKS[0];
+                leaderboard.map((l, idx) => {
+                  const r = RANKS[l.rank - 1] || RANKS[0];
                   return (
-                    <tr key={idx} style={{ borderBottom: "1px solid #1e2333", transition: "background .2s" }} className="table-row-hover">
+                    <tr key={l.id || idx} style={{ borderBottom: "1px solid #1e2333", transition: "background .2s" }} className="table-row-hover">
                       <td style={{ padding: "16px 20px" }}>
-                        <div style={{ width: 32, height: 32, borderRadius: "50%", background: idx < 3 ? l.color + "20" : "#1a1f2e", color: idx < 3 ? l.color : "#6b7280", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, border: idx < 3 ? `1px solid ${l.color}50` : "none" }}>
-                          #{l.rank}
+                        <div style={{ width: 32, height: 32, borderRadius: "50%", background: idx < 3 ? r.color + "20" : "#1a1f2e", color: idx < 3 ? r.color : "#6b7280", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, border: idx < 3 ? `1px solid ${r.color}50` : "none" }}>
+                          #{idx + 1}
                         </div>
                       </td>
                       <td style={{ padding: "16px 20px", fontSize: 14, fontWeight: 600, color: "#e8e4dc" }}>
