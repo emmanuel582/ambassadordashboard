@@ -9,9 +9,10 @@ export default function Auth() {
   const { user, signIn, signUp, signInWithGoogle } = useAuth();
   const [searchParams] = useSearchParams();
   const refId = searchParams.get('ref');
+  const prefilledEmail = searchParams.get('email');
   
-  const [isSignUp, setIsSignUp] = useState(!!refId); // default to sign up if ref exists
-  const [email, setEmail] = useState('');
+  const [isSignUp, setIsSignUp] = useState(!!refId || !!prefilledEmail); // default to sign up if ref or email exists
+  const [email, setEmail] = useState(prefilledEmail || '');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
