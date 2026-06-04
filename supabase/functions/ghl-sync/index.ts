@@ -38,7 +38,7 @@ serve(async (req) => {
 
     const token = authHeader.replace('Bearer ', '');
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
-    
+
     if (userError || !user) {
       return new Response(JSON.stringify({ error: 'Unauthorized', details: userError?.message }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -109,7 +109,7 @@ serve(async (req) => {
     const recruits = parseInt(getCustomFieldValue(customFields, 'Ambassador Total Recruits') || '0', 10);
     const volume = parseFloat(getCustomFieldValue(customFields, 'Ambassador Total Volume') || '0');
     const rankLevel = parseInt(getCustomFieldValue(customFields, 'Ambassador Rank Level') || '1', 10);
-    
+
     // Attempt to find the real GHL Affiliate link natively
     let referralLink = getCustomFieldValue(customFields, 'Ambassador Referral Link') || '';
     if (!referralLink) {
@@ -145,7 +145,7 @@ serve(async (req) => {
         const txnData = await txnRes.json();
         transactions = (txnData.data || []).map((t: any) => ({
           id: t._id || t.id,
-          amount: (t.amount || 0) / 100, // GHL stores amounts in cents
+          amount: (t.amount || 0), // GHL returns dollars, not cents
           currency: t.currency || 'usd',
           status: t.status || 'unknown',
           createdAt: t.createdAt || t.created_at,
@@ -155,9 +155,9 @@ serve(async (req) => {
 
         for (const t of transactions) {
           if (t.status === 'succeeded' || t.status === 'completed') {
-            commissionAvailable += t.amount;
+            commissionAvailable += (t.amount * 0.10); // 10% commission
           } else if (t.status === 'pending') {
-            commissionPending += t.amount;
+            commissionPending += (t.amount * 0.10);
           }
         }
       }
@@ -169,7 +169,7 @@ serve(async (req) => {
           id: s._id || s.id,
           name: s.name || s.title || 'Subscription',
           status: s.status || 'unknown',
-          amount: (s.amount || 0) / 100,
+          amount: (s.amount || 0),
           currency: s.currency || 'usd',
           interval: s.recurrence?.interval || s.interval || 'month',
           createdAt: s.createdAt || s.created_at,
@@ -180,14 +180,14 @@ serve(async (req) => {
       if (teamRes.ok) {
         const teamData = await teamRes.json();
         const allContacts = teamData.contacts || [];
-        
+
         // Filter to only contacts that have ambassador-related tags
         const ambassadorContacts = allContacts.filter((c: any) => {
           const tags = (c.tags || []).map((t: string) => t.toLowerCase());
-          return tags.includes('ambassador - active') || 
-                 tags.includes('ambassador approved') ||
-                 tags.includes('ambassador-active') ||
-                 tags.includes('ambassador-approved');
+          return tags.includes('ambassador - active') ||
+            tags.includes('ambassador approved') ||
+            tags.includes('ambassador-active') ||
+            tags.includes('ambassador-approved');
         });
 
         for (const amb of ambassadorContacts) {
@@ -196,7 +196,7 @@ serve(async (req) => {
           const ambRecruits = parseInt(getCustomFieldValue(ambCF, 'Ambassador Total Recruits') || '0', 10);
           const ambVolume = parseFloat(getCustomFieldValue(ambCF, 'Ambassador Total Volume') || '0');
           const ambRankLevel = parseInt(getCustomFieldValue(ambCF, 'Ambassador Rank Level') || '1', 10);
-          
+
           // Find their affiliate link
           let ambRefLink = getCustomFieldValue(ambCF, 'Ambassador Referral Link') || '';
           if (!ambRefLink) {
