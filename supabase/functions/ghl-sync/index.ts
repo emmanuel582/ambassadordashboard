@@ -109,7 +109,19 @@ serve(async (req) => {
     const recruits = parseInt(getCustomFieldValue(customFields, 'Ambassador Total Recruits') || '0', 10);
     const volume = parseFloat(getCustomFieldValue(customFields, 'Ambassador Total Volume') || '0');
     const rankLevel = parseInt(getCustomFieldValue(customFields, 'Ambassador Rank Level') || '1', 10);
-    const referralLink = getCustomFieldValue(customFields, 'Ambassador Referral Link') || '';
+    
+    // Attempt to find the real GHL Affiliate link natively
+    let referralLink = getCustomFieldValue(customFields, 'Ambassador Referral Link') || '';
+    if (!referralLink) {
+      // Loop through all custom fields to find any link containing '?am_id='
+      for (const cf of customFields) {
+        const val = String(cf.value ?? cf.field_value ?? '');
+        if (val.includes('?am_id=')) {
+          referralLink = val;
+          break;
+        }
+      }
+    }
 
     // Rank level is 1-indexed in the UI (0-indexed in the array), so subtract 1
     const selectedRank = Math.max(0, Math.min(rankLevel - 1, 7));
