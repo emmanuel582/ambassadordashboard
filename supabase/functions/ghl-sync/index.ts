@@ -126,16 +126,21 @@ serve(async (req) => {
     // Rank level is 1-indexed in the UI (0-indexed in the array), so subtract 1
     const selectedRank = Math.max(0, Math.min(rankLevel - 1, 7));
 
-    // ─── 5. Fetch Payment Transactions from GHL (uses connected Stripe) ───
+    // ─── 5. Fetch Payment Transactions, Subscriptions, and Team in Parallel ───
     let transactions: any[] = [];
     let commissionAvailable = 0;
     let commissionPending = 0;
+    let subscriptions: any[] = [];
+    let allAmbassadors: any[] = [];
 
     try {
-      const txnRes = await fetch(
-        `https://services.leadconnectorhq.com/payments/transactions?altId=${ghlLocationId}&altType=location&contactId=${contact.id}&limit=10`,
-        { method: 'GET', headers: ghlHeaders }
-      );
+      const [txnRes, subRes, teamRes] = await Promise.all([
+        fetch(`https://services.leadconnectorhq.com/payments/transactions?altId=${ghlLocationId}&altType=location&contactId=${contact.id}&limit=10`, { method: 'GET', headers: ghlHeaders }),
+        fetch(`https://services.leadconnectorhq.com/payments/subscriptions?altId=${ghlLocationId}&altType=location&contactId=${contact.id}&limit=10`, { method: 'GET', headers: ghlHeaders }),
+        fetch(`https://services.leadconnectorhq.com/contacts/?locationId=${ghlLocationId}&limit=100`, { method: 'GET', headers: ghlHeaders })
+      ]);
+
+      // Handle Transactions
       if (txnRes.ok) {
         const txnData = await txnRes.json();
         transactions = (txnData.data || []).map((t: any) => ({
@@ -148,7 +153,6 @@ serve(async (req) => {
           type: t.type || 'charge',
         }));
 
-        // Calculate commission totals from transaction data
         for (const t of transactions) {
           if (t.status === 'succeeded' || t.status === 'completed') {
             commissionAvailable += t.amount;
@@ -157,17 +161,8 @@ serve(async (req) => {
           }
         }
       }
-    } catch (payErr) {
-      console.warn('Could not fetch GHL payment transactions:', payErr);
-    }
 
-    // ─── 6. Fetch Subscriptions from GHL (uses connected Stripe) ───
-    let subscriptions: any[] = [];
-    try {
-      const subRes = await fetch(
-        `https://services.leadconnectorhq.com/payments/subscriptions?altId=${ghlLocationId}&altType=location&contactId=${contact.id}&limit=10`,
-        { method: 'GET', headers: ghlHeaders }
-      );
+      // Handle Subscriptions
       if (subRes.ok) {
         const subData = await subRes.json();
         subscriptions = (subData.data || []).map((s: any) => ({
@@ -180,18 +175,8 @@ serve(async (req) => {
           createdAt: s.createdAt || s.created_at,
         }));
       }
-    } catch (subErr) {
-      console.warn('Could not fetch GHL subscriptions:', subErr);
-    }
 
-    // ─── 7. Fetch ALL ambassadors for Team & Leaderboard ───
-    let allAmbassadors: any[] = [];
-    try {
-      // Search for contacts with the "ambassador - active" tag
-      const teamRes = await fetch(
-        `https://services.leadconnectorhq.com/contacts/?locationId=${ghlLocationId}&query=ambassador&limit=100`,
-        { method: 'GET', headers: ghlHeaders }
-      );
+      // Handle Team / Leaderboard
       if (teamRes.ok) {
         const teamData = await teamRes.json();
         const allContacts = teamData.contacts || [];
