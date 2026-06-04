@@ -65,10 +65,10 @@ export default function Dashboard() {
                 <div style={{ fontSize: 11, color: "#4b5563", letterSpacing: ".08em", textTransform: "uppercase" }}>Your Referral Link</div>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <div style={{ flex: 1, background: "#0a0d14", border: "1px solid #1e2333", borderRadius: 8, padding: "12px 16px", color: "#a0a8b8", fontSize: 13, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                  {referralLink}
+                <div style={{ flex: 1, background: "#0a0d14", border: "1px solid #1e2333", borderRadius: 8, padding: "12px 16px", color: referralLink ? "#a0a8b8" : "#4b5563", fontSize: 13, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  {loadingSync ? "Syncing your referral link..." : (referralLink || "Referral link will appear once your GHL profile is linked")}
                 </div>
-                <button onClick={handleCopy} style={{ background: copied ? "#7EC8A4" : "#e8e4dc", color: "#0a0d14", border: "none", borderRadius: 8, padding: "12px 16px", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, fontSize: 13, fontWeight: 600, transition: "background 0.2s" }}>
+                <button onClick={handleCopy} disabled={!referralLink} style={{ background: copied ? "#7EC8A4" : (!referralLink ? "#2a2f3e" : "#e8e4dc"), color: !referralLink ? "#6b7280" : "#0a0d14", border: "none", borderRadius: 8, padding: "12px 16px", cursor: referralLink ? "pointer" : "not-allowed", display: "flex", alignItems: "center", gap: 8, fontSize: 13, fontWeight: 600, transition: "background 0.2s" }}>
                   {copied ? <><Check size={16} /> Copied</> : <><Copy size={16} /> Copy</>}
                 </button>
               </div>

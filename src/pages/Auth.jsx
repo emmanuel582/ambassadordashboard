@@ -1,12 +1,16 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useSearchParams } from 'react-router-dom';
 import { LogIn, UserPlus, Mail, Lock, User, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { supabase } from '../lib/supabase';
 
 export default function Auth() {
   const { user, signIn, signUp, signInWithGoogle } = useAuth();
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [searchParams] = useSearchParams();
+  const refId = searchParams.get('ref');
+  
+  const [isSignUp, setIsSignUp] = useState(!!refId); // default to sign up if ref exists
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
@@ -37,7 +41,7 @@ export default function Auth() {
           setSubmitting(false);
           return;
         }
-        const { data: signUpData, error: signUpError } = await signUp(email, password, fullName.trim());
+        const { data: signUpData, error: signUpError } = await signUp(email, password, fullName.trim(), refId);
         if (signUpError) {
           if (signUpError.message?.toLowerCase().includes('already registered')) {
             setError('This email is already registered. Try signing in instead.');
@@ -47,6 +51,25 @@ export default function Auth() {
             toast.error(signUpError.message);
           }
         } else {
+          // ─── Increment the referrer's recruit count in GHL ───
+          if (refId) {
+            try {
+              const { data: { session } } = await supabase.auth.getSession();
+              if (session?.access_token) {
+                const res = await supabase.functions.invoke('ghl-recruit-increment', {
+                  body: { referrerId: refId, newUserEmail: email },
+                });
+                if (res.error) {
+                  console.warn('Could not increment referrer recruits:', res.error);
+                } else {
+                  console.log('Referrer recruit count incremented successfully.');
+                }
+              }
+            } catch (refErr) {
+              console.warn('Referral increment failed (non-blocking):', refErr);
+            }
+          }
+
           // Check if user was auto-confirmed (no email confirmation required)
           if (signUpData?.user && !signUpData.user.email_confirmed_at && signUpData.user.confirmation_sent_at) {
             setSuccess('Account created! Check your email to confirm, then sign in.');

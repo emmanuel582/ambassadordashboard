@@ -59,7 +59,7 @@ serve(async (req) => {
       console.warn("GHL_API_KEY or GHL_LOCATION_ID not set. Returning fallback data.");
       return new Response(JSON.stringify({
         sales: 0, recruits: 0, volume: 0, selectedRank: 0,
-        referralLink: `https://remotefitlabs.com/join`,
+        referralLink: '',
         commissions: { available: 0, pending: 0 },
         transactions: [], subscriptions: [],
         mocked: true, contactFound: false
@@ -91,7 +91,7 @@ serve(async (req) => {
     if (!contactData.contacts || contactData.contacts.length === 0) {
       return new Response(JSON.stringify({
         sales: 0, recruits: 0, volume: 0, selectedRank: 0,
-        referralLink: `https://remotefitlabs.com/join?ref=pending`,
+        referralLink: '',
         commissions: { available: 0, pending: 0 },
         transactions: [], subscriptions: [],
         mocked: false, contactFound: false
@@ -109,8 +109,7 @@ serve(async (req) => {
     const recruits = parseInt(getCustomFieldValue(customFields, 'Ambassador Total Recruits') || '0', 10);
     const volume = parseFloat(getCustomFieldValue(customFields, 'Ambassador Total Volume') || '0');
     const rankLevel = parseInt(getCustomFieldValue(customFields, 'Ambassador Rank Level') || '1', 10);
-    const referralLink = getCustomFieldValue(customFields, 'Ambassador Referral Link')
-      || `https://remotefitlabs.com/join?ref=${contact.id}`;
+    const referralLink = getCustomFieldValue(customFields, 'Ambassador Referral Link') || '';
 
     // Rank level is 1-indexed in the UI (0-indexed in the array), so subtract 1
     const selectedRank = Math.max(0, Math.min(rankLevel - 1, 7));

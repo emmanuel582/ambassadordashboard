@@ -72,7 +72,7 @@ export function AppProvider({ children }) {
   const [recruits, setRecruits] = useState(0);
   const [selectedRank, setSelectedRank] = useState(0);
   const [volume, setVolume] = useState(0);
-  const [referralLink, setReferralLink] = useState("https://remotefitlabs.com/join");
+  const [referralLink, setReferralLink] = useState(""); // Empty until real data loads
 
   // Payment data from GHL's connected Stripe
   const [commissions, setCommissions] = useState({ available: 0, pending: 0 });
@@ -99,7 +99,7 @@ export function AppProvider({ children }) {
           setRecruits(0);
           setVolume(0);
           setSelectedRank(0);
-          setReferralLink("https://remotefitlabs.com/join");
+          setReferralLink(""); // No fallback — only real data
         } else if (data) {
           // Toast Notifications
           if (data.mocked) {
@@ -115,7 +115,14 @@ export function AppProvider({ children }) {
           setRecruits(data.recruits ?? 0);
           setVolume(data.volume ?? 0);
           setSelectedRank(data.selectedRank ?? 0);
-          setReferralLink(data.referralLink ?? `https://remotefitlabs.com/join?ref=${data.contactId || 'new'}`);
+          // Use the real referral link from GHL custom field, or build one from the real contact ID
+          if (data.referralLink && data.referralLink.trim() !== '') {
+            setReferralLink(data.referralLink);
+          } else if (data.contactId) {
+            setReferralLink(`https://remotefitlabs.com/join?ref=${data.contactId}`);
+          } else {
+            setReferralLink(''); // No link available — contact not found
+          }
 
           // Payment data from GHL Stripe
           if (data.commissions) {
